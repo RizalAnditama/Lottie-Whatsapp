@@ -23,6 +23,25 @@ function copyDir(src, dest) {
   }
 }
 
+function collectJsonFiles(folder) {
+  const files = [];
+
+  for (const item of fs.readdirSync(folder, { withFileTypes: true })) {
+    const fullPath = path.join(folder, item.name);
+
+    if (item.isDirectory()) {
+      files.push(...collectJsonFiles(fullPath));
+      continue;
+    }
+
+    if (item.isFile() && fullPath.toLowerCase().endsWith(".json")) {
+      files.push(fullPath);
+    }
+  }
+
+  return files;
+}
+
 function getMime(filePath, mime) {
   if (mime) return mime;
   return MIME[path.extname(filePath || "").toLowerCase()] || null;
@@ -54,6 +73,38 @@ function replaceBase64Image(jsonPath, dataUri) {
 
   asset.p = dataUri;
   fs.writeFileSync(jsonPath, JSON.stringify(json));
+}
+
+function replaceBase64ImageText(rawJson, dataUri) {
+  const json = JSON.parse(rawJson);
+
+  if (!Array.isArray(json.assets)) {
+    throw new Error("JSON sem assets.");
+  }
+
+  const asset = json.assets.find(a => typeof a?.p === "string" && a.p.startsWith("data:image/"));
+  if (!asset) {
+    throw new Error("Nenhuma imagem base64 encontrada no Lottie.");
+  }
+
+  asset.p = dataUri;
+  return JSON.stringify(json);
+}
+
+function readJsonSource({ lottieJsonPath, lottieJsonBuffer }) {
+  if (lottieJsonBuffer) {
+    return Buffer.isBuffer(lottieJsonBuffer) ? lottieJsonBuffer.toString("utf8") : String(lottieJsonBuffer);
+  }
+
+  if (lottieJsonPath) {
+    if (!fs.existsSync(lottieJsonPath)) {
+      throw new Error("Lottie JSON não encontrado.");
+    }
+
+    return fs.readFileSync(lottieJsonPath, "utf8");
+  }
+
+  return null;
 }
 
 function escapePowerShellString(value) {
@@ -116,12 +167,17 @@ async function buildLottieSticker({
   imagePath,
   buffer,
   mime,
-  jsonRelativePath = "animation/animation_secondary.json"
+  jsonRelativePath = "animation/animation_secondary.json",
+  lottieJsonPath,
+  lottieJsonBuffer,
+  applyJsonToAll = false
 }) {
   if (!fs.existsSync(baseFolder)) throw new Error("baseFolder não encontrado.");
 
-  if (!buffer && !imagePath) {
-    throw new Error("Envie imagePath ou buffer.");
+  const sourceJson = readJsonSource({ lottieJsonPath, lottieJsonBuffer });
+
+  if (!buffer && !imagePath && !sourceJson) {
+    throw new Error("Envie imagePath, buffer, lottieJsonPath ou lottieJsonBuffer.");
   }
 
   if (!buffer && imagePath) {
@@ -129,14 +185,43 @@ async function buildLottieSticker({
     buffer = fs.readFileSync(imagePath);
   }
 
-  mime = getMime(imagePath, mime);
-  if (!mime) throw new Error("Formato não suportado. Use PNG, JPG, JPEG ou WEBP.");
+  if (buffer || imagePath) {
+    mime = getMime(imagePath, mime);
+    if (!mime) throw new Error("Formato não suportado. Use PNG, JPG, JPEG ou WEBP.");
+  }
 
   const temp = path.join(os.tmpdir(), `lottie-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`);
 
   try {
     copyDir(baseFolder, temp);
-    replaceBase64Image(path.join(temp, jsonRelativePath), toDataUri(buffer, mime));
+
+    const imageDataUri = buffer || imagePath ? toDataUri(buffer, mime) : null;
+    if (sourceJson) {
+      const payload = imageDataUri ? replaceBase64ImageText(sourceJson, imageDataUri) : sourceJson;
+
+      if (applyJsonToAll) {
+        for (const jsonPath of collectJsonFiles(temp)) {
+          fs.writeFileSync(jsonPath, payload);
+        }
+      } else {
+        const targetPath = path.join(temp, jsonRelativePath);
+        if (!fs.existsSync(targetPath)) {
+          throw new Error(`JSON de destino não encontrado: ${jsonRelativePath}`);
+        }
+
+        fs.writeFileSync(targetPath, payload);
+      }
+    } else {
+      replaceBase64Image(path.join(temp, jsonRelativePath), imageDataUri);
+
+      if (applyJsonToAll) {
+        const payload = fs.readFileSync(path.join(temp, jsonRelativePath), "utf8");
+        for (const jsonPath of collectJsonFiles(temp)) {
+          fs.writeFileSync(jsonPath, payload);
+        }
+      }
+    }
+
     zipToWas(temp, output);
     return output;
   } finally {

@@ -21,26 +21,50 @@
         <p class="badge">VIRAL XD XD XD</p>
         <h1>Lottie Sticker Builder</h1>
         <p class="lead">
-          Convert an image into a WhatsApp <strong>.was</strong> animated
-          sticker directly in your browser.
+          Convert an image or Lottie JSON into a WhatsApp <strong>.was</strong>
+          animated sticker directly in your browser.
         </p>
         <ul class="meta">
           <li>Runs fully client-side</li>
           <li>Works on Windows, macOS, and Linux</li>
-          <li>Uses your project template files</li>
+          <li>Uses your project template files or your own JSON</li>
         </ul>
       </section>
 
       <section class="panel" aria-label="Sticker builder">
         <form id="builder-form" novalidate>
           <label class="field">
-            <span>1. Image file</span>
+            <span>1. Image file (optional)</span>
             <input
               id="image-input"
               type="file"
               accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
-              required
             />
+            <small
+              >Optional if you upload a Lottie JSON that already has the
+              embedded image.</small
+            >
+          </label>
+
+          <label class="field">
+            <span>Optional Lottie JSON file</span>
+            <input
+              id="lottie-json-input"
+              type="file"
+              accept=".json,application/json"
+            />
+            <small
+              >Upload your own Lottie JSON to replace the template or reuse it
+              as-is if it already has the embedded image.</small
+            >
+          </label>
+
+          <label class="field field-inline">
+            <input id="apply-to-all-json" type="checkbox" checked />
+            <span
+              >Apply the selected JSON to every animation JSON file in the
+              package</span
+            >
           </label>
 
           <label class="field">
@@ -70,7 +94,9 @@
         </form>
 
         <div class="status" aria-live="polite">
-          <p id="status-text">Select an image to start.</p>
+          <p id="status-text">
+            Select an image or a Lottie JSON file to start.
+          </p>
         </div>
 
         <div class="preview-wrap">

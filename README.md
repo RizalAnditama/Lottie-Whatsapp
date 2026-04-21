@@ -1,6 +1,6 @@
 # 🧩 Lottie Sticker Builder (WAS) — Beta
 
-Turns an image (**buffer** or **file**) into an animated `.was` (Lottie) sticker ready to send on WhatsApp.
+Turns an image, or a direct Lottie JSON file with an embedded image, into an animated `.was` sticker ready to send on WhatsApp.
 
 ---
 
@@ -46,7 +46,7 @@ src/
            └── animation_secondary.json
 ```
 
-This JSON file must already include a base64 image, since the builder only replaces the existing embedded image.
+This JSON file must already include a base64 image if you want to use it on its own. If you also upload an image, the builder can inject that image into the JSON before packaging.
 
 ---
 
@@ -96,6 +96,8 @@ This repository now includes a static web app in `docs/` that builds `.was` file
 - No backend
 - No database
 - Works on GitHub Pages
+- Supports either an image upload or a direct Lottie JSON upload
+- Can apply one JSON across every animation JSON in the package
 
 ### Web app location
 
@@ -115,6 +117,12 @@ python -m http.server 5500 --directory docs
 ```
 
 Then open `http://localhost:5500`.
+
+### Direct Lottie JSON usage
+
+If your Lottie JSON already contains the embedded image, upload it directly in the web app and leave the image field empty.
+
+If you want the same JSON applied to every animation JSON file in the package, keep the "apply to every animation JSON file" option enabled.
 ---
 
 ## 🧠 Parameters
@@ -127,12 +135,16 @@ Then open `http://localhost:5500`.
 | `mime` | string | ❌ | Image MIME type (automatically detected if you use `imagePath`) |
 | `output` | string | ❌ | Output path for the final `.was` file |
 | `jsonRelativePath` | string | ❌ | Path to the JSON file inside the base folder |
+| `lottieJsonPath` | string | ❌ | Custom Lottie JSON file to use instead of the template JSON |
+| `lottieJsonBuffer` | Buffer | ❌ | In-memory Lottie JSON data |
+| `applyJsonToAll` | boolean | ❌ | Replace every animation JSON in the package with the same JSON payload |
 
 ---
 
 ## ⚠️ Important rules
 
-- You must provide **`buffer` or `imagePath`**
+- You must provide **`buffer`, `imagePath`, `lottieJsonPath`, or `lottieJsonBuffer`**
+- If you use a direct Lottie JSON, it should already contain an embedded base64 image unless you also upload an image to inject
 - Supported formats:
   - PNG
   - JPG / JPEG
@@ -145,7 +157,10 @@ Then open `http://localhost:5500`.
 ## 💥 Common errors
 
 ### `Mime not detected`
-You did not provide `mime` or `imagePath`.
+You did not provide `mime` or `imagePath` for an image upload.
+
+### `No embedded base64 image found in the selected Lottie JSON`
+Your uploaded JSON does not include an embedded image, and you did not provide a separate image to inject.
 
 ### `JSON without assets`
 The JSON file is invalid or does not match the expected structure.
