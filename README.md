@@ -9,7 +9,7 @@ Turns an image (**buffer** or **file**) into an animated `.was` (Lottie) sticker
 ### 1. Clone or download the project
 
 ```bash
-git clone https://github.com/RizalAnditama/Lottie-Whatsapp.git
+git clone https://github.com/Pedrozz13755/Lottie-Whatsapp.git
 cd Lottie-Whatsapp
 ```
 
@@ -19,15 +19,19 @@ Or, if you prefer, you can copy the files directly into your own project.
 
 ### 2. Install required dependencies
 
-This project only uses native Node.js modules, but it does require the `zip` command to be installed on your system.
+This project only uses native Node.js modules.
 
-On Linux / Termux / Ubuntu:
+On **Windows**, no extra tool is required (it uses built-in PowerShell `Compress-Archive`).
+
+On **Linux / Termux / Ubuntu**, install `zip`:
 
 ```bash
 pkg install zip
 # or
 apt install zip
 ```
+
+On **macOS**, the `zip` command is usually already available.
 
 ---
 
@@ -85,6 +89,48 @@ await client.sendMessage(from, {
 
 ---
 
+## 🌐 Web App (GitHub Pages)
+
+This repository now includes a static web app in `docs/` that builds `.was` files directly in the browser.
+
+- No backend
+- No database
+- Works on GitHub Pages
+
+### Web app location
+
+- `docs/index.html`
+- `docs/app.js`
+- `docs/styles.css`
+- `docs/templates/exemple/animation/*`
+
+### Run locally
+
+Use any static server and point it to `docs/`.
+
+Example with Python:
+
+```bash
+python -m http.server 5500 --directory docs
+```
+
+Then open `http://localhost:5500`.
+
+### Publish on GitHub Pages
+
+1. Push your changes to GitHub.
+2. Open repository settings on GitHub.
+3. Go to **Pages**.
+4. Set source to **Deploy from a branch**.
+5. Select your branch (usually `main`) and folder **`/docs`**.
+6. Save and wait for deployment.
+
+Your app will be available at:
+
+`https://<your-username>.github.io/<your-repo>/`
+
+---
+
 ## 🧠 Parameters
 
 | Name | Type | Required | Description |
@@ -122,7 +168,9 @@ The JSON file is invalid or does not match the expected structure.
 Your Lottie file does not include an embedded base64 image to replace.
 
 ### `zip not found`
-The `zip` command is not installed on your system.
+The `zip` command is not installed on your system (Linux/macOS path).
+
+On Windows, this project uses PowerShell compression by default.
 
 ---
 
@@ -164,5 +212,5 @@ If you use, modify, or share it, please keep the original credits.
 
 ### Footer
 
-Made by **Pedrozz Mods**  
+Made by **Rizal Anditama**  
 Project is in **beta**, subject to changes and possible issues.

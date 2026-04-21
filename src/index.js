@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const os = require("os");
 const crypto = require("crypto");
-const { execSync } = require("child_process");
+const { execFileSync } = require("child_process");
 
 const MIME = {
   ".png": "image/png",
@@ -56,6 +56,32 @@ function replaceBase64Image(jsonPath, dataUri) {
   fs.writeFileSync(jsonPath, JSON.stringify(json));
 }
 
+function escapePowerShellString(value) {
+  return String(value).replace(/'/g, "''");
+}
+
+function zipWithPowerShell(folder, zipPath) {
+  const sourcePath = path.join(folder, "*");
+  const command = [
+    "$ErrorActionPreference = 'Stop'",
+    `Compress-Archive -Path '${escapePowerShellString(sourcePath)}' -DestinationPath '${escapePowerShellString(zipPath)}' -Force`
+  ].join("; ");
+
+  try {
+    execFileSync("powershell", ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", command], {
+      stdio: "ignore"
+    });
+  } catch {
+    execFileSync("pwsh", ["-NoProfile", "-NonInteractive", "-Command", command], {
+      stdio: "ignore"
+    });
+  }
+}
+
+function zipWithCommand(folder, zipPath) {
+  execFileSync("zip", ["-r", zipPath, "."], { cwd: folder, stdio: "ignore" });
+}
+
 function zipToWas(folder, output) {
   fs.mkdirSync(path.dirname(output), { recursive: true });
 
@@ -63,8 +89,25 @@ function zipToWas(folder, output) {
   if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
   if (fs.existsSync(output)) fs.unlinkSync(output);
 
-  execSync(`zip -r "${zipPath}" .`, { cwd: folder, stdio: "ignore" });
-  fs.renameSync(zipPath, output);
+  try {
+    if (process.platform === "win32") {
+      zipWithPowerShell(folder, zipPath);
+    } else {
+      zipWithCommand(folder, zipPath);
+    }
+  } catch {
+    if (process.platform !== "win32") {
+      throw new Error("zip não encontrado. Instale o comando zip no sistema.");
+    }
+
+    throw new Error(
+      "Falha ao compactar no Windows. Use PowerShell 5+ (Compress-Archive) ou instale zip e execute em ambiente compatível."
+    );
+  }
+
+  if (zipPath !== output) {
+    fs.renameSync(zipPath, output);
+  }
 }
 
 async function buildLottieSticker({
