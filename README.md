@@ -1,39 +1,39 @@
 # 🧩 Lottie Sticker Builder (WAS) — Beta
 
-Transforma uma imagem (**buffer** ou **arquivo**) em uma figurinha animada `.was` (Lottie) pronta pra usar no WhatsApp.
+Turns an image (**buffer** or **file**) into an animated `.was` (Lottie) sticker ready to send on WhatsApp.
 
 ---
 
-## ⚡ Instalação
+## ⚡ Installation
 
-### 1. Clone ou baixe o projeto
+### 1. Clone or download the project
 
 ```bash
-git clone https://github.com/Pedrozz13755/Lottie-Whatsapp.git
+git clone https://github.com/RizalAnditama/Lottie-Whatsapp.git
 cd Lottie-Whatsapp
 ```
 
-Ou, se preferir, só coloque os arquivos dentro do teu próprio projeto.
+Or, if you prefer, you can copy the files directly into your own project.
 
 ---
 
-### 2. Instale as dependências necessárias
+### 2. Install required dependencies
 
-Esse código usa apenas módulos nativos do Node.js, mas precisa que o comando `zip` esteja instalado no sistema.
+This project only uses native Node.js modules, but it does require the `zip` command to be installed on your system.
 
-No Linux / Termux / Ubuntu:
+On Linux / Termux / Ubuntu:
 
 ```bash
 pkg install zip
-# ou
+# or
 apt install zip
 ```
 
 ---
 
-## 📦 Estrutura esperada
+## 📦 Expected structure
 
-Você precisa de uma pasta base com os arquivos do Lottie. Exemplo:
+You need a base folder containing the Lottie files. Example:
 
 ```
 src/
@@ -42,13 +42,13 @@ src/
            └── animation_secondary.json
 ```
 
-Esse arquivo JSON precisa já conter uma imagem em base64 dentro dele, porque o builder vai substituir essa imagem automaticamente.
+This JSON file must already include a base64 image, since the builder only replaces the existing embedded image.
 
 ---
 
-## 🚀 Como usar
+## 🚀 How to use
 
-### Importe a função
+### Import the function
 
 ```js
 const { buildLottieSticker } = require("./src/index");
@@ -56,7 +56,7 @@ const { buildLottieSticker } = require("./src/index");
 
 ---
 
-### Exemplo simples
+### Simple example
 
 ```js
 const path = require("path");
@@ -72,7 +72,7 @@ const output = await buildLottieSticker({
 
 ---
 
-### Enviar no WhatsApp com Baileys
+### Send on WhatsApp with Baileys
 
 ```js
 const fs = require("fs");
@@ -85,50 +85,50 @@ await client.sendMessage(from, {
 
 ---
 
-## 🧠 Parâmetros
+## 🧠 Parameters
 
-| Nome | Tipo | Obrigatório | Descrição |
-|------|------|-------------|-----------|
-| `baseFolder` | string | ✅ | Pasta base do Lottie |
-| `buffer` | Buffer | ❌ | Imagem em memória |
-| `imagePath` | string | ❌ | Caminho da imagem |
-| `mime` | string | ❌ | Tipo da imagem (detectado automaticamente se usar `imagePath`) |
-| `output` | string | ❌ | Caminho do arquivo `.was` final |
-| `jsonRelativePath` | string | ❌ | Caminho do JSON dentro da pasta base |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `baseFolder` | string | ✅ | Base Lottie folder |
+| `buffer` | Buffer | ❌ | In-memory image |
+| `imagePath` | string | ❌ | Path to the image |
+| `mime` | string | ❌ | Image MIME type (automatically detected if you use `imagePath`) |
+| `output` | string | ❌ | Output path for the final `.was` file |
+| `jsonRelativePath` | string | ❌ | Path to the JSON file inside the base folder |
 
 ---
 
-## ⚠️ Regras importantes
+## ⚠️ Important rules
 
-- Você precisa enviar **`buffer` ou `imagePath`**
-- Formatos suportados:
+- You must provide **`buffer` or `imagePath`**
+- Supported formats:
   - PNG
   - JPG / JPEG
   - WEBP
-- O JSON do Lottie precisa já ter uma imagem em base64 embutida
-- O código apenas substitui a imagem existente, ele não cria a estrutura do Lottie do zero
+- The Lottie JSON must already contain an embedded base64 image
+- This code only replaces the existing image; it does not generate a Lottie structure from scratch
 
 ---
 
-## 💥 Erros comuns
+## 💥 Common errors
 
-### `Mime não detectado`
-Você não enviou `mime` nem `imagePath`
+### `Mime not detected`
+You did not provide `mime` or `imagePath`.
 
-### `JSON sem assets`
-O arquivo JSON está inválido ou não possui a estrutura esperada
+### `JSON without assets`
+The JSON file is invalid or does not match the expected structure.
 
-### `Nenhuma imagem base64 encontrada no Lottie`
-O teu arquivo Lottie não contém imagem embutida em base64 para substituir
+### `No base64 image found in Lottie`
+Your Lottie file does not include an embedded base64 image to replace.
 
-### `zip não encontrado`
-O comando `zip` não está instalado no sistema
+### `zip not found`
+The `zip` command is not installed on your system.
 
 ---
 
-## 🛠️ Dica útil
+## 🛠️ Useful tip
 
-Se quiser usar diretamente com imagem recebida do WhatsApp, você pode pegar o buffer e mandar pro builder:
+If you want to use an image received from WhatsApp directly, get the buffer and pass it to the builder:
 
 ```js
 const buffer = await getFileBuffer(message, "image");
@@ -143,26 +143,26 @@ const output = await buildLottieSticker({
 
 ---
 
-## 🚧 Status do projeto
+## 🚧 Project status
 
-> ⚠️ **VERSÃO BETA**
+> ⚠️ **BETA VERSION**
 >
-> Esse projeto ainda está em fase beta.
-> Dependendo do arquivo Lottie usado, algumas animações podem não funcionar corretamente.
-> Ainda não existe suporte garantido para todos os tipos de estrutura Lottie.
+> This project is still in beta.
+> Depending on the Lottie file you use, some animations may not work as expected.
+> Full compatibility with all Lottie structures is not guaranteed yet.
 
 ---
 
-## 👑 Créditos
+## 👑 Credits
 
-Desenvolvido por **Pedrozz Mods**
+Developed by **Pedrozz Mods**
 
-Esse projeto ainda está em desenvolvimento e na versão beta.
-Se for usar, modificar ou compartilhar, mantenha os créditos.
+This project is still under development and currently in beta.
+If you use, modify, or share it, please keep the original credits.
 
 ---
 
 ### Footer
 
-Feito por **Pedrozz Mods**  
-Projeto em **versão beta**, sujeito a mudanças e possíveis erros.
+Made by **Pedrozz Mods**  
+Project is in **beta**, subject to changes and possible issues.
